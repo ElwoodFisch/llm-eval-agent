@@ -7,18 +7,21 @@ load_dotenv()
 client = OpenAI()
 
 #READ TEST CASES FROM CSV
-prompts = []
+rows = []
 
 with open("prompts.csv", newline ="", encoding="utf-8") as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        prompts.append(row["prompt"])
+        rows.append(row)
+        print(rows[0])
 
 #CREATE the RESULTS CONTAINER
 results = []
 
 #LOOP to collect MODEL RESPONSES for each case
-for prompt in prompts:
+for row in rows:
+    prompt = row["prompt"] 
+
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=[
@@ -37,12 +40,9 @@ for prompt in prompts:
 
 #TEST OUTPUT
 
-    results.append({
-        "prompt": prompt,
-        "output": output,
-        "word_count": word_count,
-        "result": result
-    })
+    row["output"] = output
+    row["word_count"] = word_count
+    row["result"] = result
 
     print("\n--- Test Case ---")
     print("PROMPT:")
@@ -55,10 +55,10 @@ for prompt in prompts:
     print(result)
     print(f"Word count: {word_count}")
 
-with open("results.csv", "w", newline="", encoding="utf-8") as csvfile:
+with open("prompts.csv", "w", newline="", encoding="utf-8") as csvfile:
     fieldnames = ["prompt", "output", "word_count", "result"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
     writer.writeheader()
-    writer.writerows(results)
+    writer.writerows(rows)
 
